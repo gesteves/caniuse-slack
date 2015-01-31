@@ -159,7 +159,7 @@ end
 # 
 def build_support_field(feature)
   {
-    :title => "Global support",
+    :title => "Total support worldwide",
     :value => "#{feature["usage_perc_y"]}%"
   }
 end
