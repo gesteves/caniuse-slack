@@ -144,11 +144,9 @@ end
 # 
 def get_attachment_color(feature)
   full_support = feature["usage_perc_y"].to_f
-  partial_support = feature["usage_perc_a"].to_f
-  total_support = full_support + partial_support
-  if total_support > 90
+  if full_support > 90
     "good"
-  elsif total_support > 50
+  elsif full_support > 50
     "warning"
   else
     "danger"
