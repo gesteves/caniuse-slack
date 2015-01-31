@@ -2,7 +2,7 @@
 
 A standalone Slack integration that allows you to request and see [caniuse.com](http://caniuse.com) data in your Slack channels.
 
-![](http://i.imgur.com/EGu4JPe.png)
+![](http://i.imgur.com/p7kvKFI.png)
 
 ## Requirements
 
