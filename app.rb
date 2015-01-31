@@ -160,7 +160,7 @@ end
 def build_support_field(feature)
   support = feature["usage_perc_y"].to_f + feature["usage_perc_a"].to_f
   {
-    :title => "Support (full + partial)",
+    :title => "Global support (full + partial)",
     :value => "#{feature["usage_perc_y"]}% + #{feature["usage_perc_a"]}% = #{sprintf("%.2f", support)}%"
   }
 end
@@ -213,7 +213,7 @@ def build_browser_support_field(feature)
     browsers << "#{name} #{versions}"
   end
   {
-    :title => "Browsers with full support (including prefixed)",
+    :title => "Browsers with full support (including prefixed support)",
     :value => browsers.join("\n")
   }
 end
