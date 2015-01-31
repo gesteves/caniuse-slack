@@ -202,22 +202,17 @@ end
 # 
 def build_browser_support_field(feature)
   supported = []
-  unsupported = []
   feature["stats"].each do |browser|
     name = get_browser_name(browser.first)
     versions = browser.last.select{ |k, v| v.match("y") }.first
-    if versions.nil?
-      versions = "_not supported_"
-      unsupported << "#{name} #{versions}"
-    else
+    unless versions.nil?
       versions = "#{versions.first.split("-").first}"
       supported << "#{name} #{versions}"
     end
   end
-  browsers = supported.sort! + unsupported.sort!
   {
     :title => "Browsers with full support (including prefixed support)",
-    :value => browsers.join("\n")
+    :value => supported.sort!.join("\n")
   }
 end
 
