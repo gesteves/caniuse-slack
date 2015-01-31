@@ -208,7 +208,7 @@ def build_browser_support_field(feature)
     if versions.nil?
       versions = "_not supported_"
     else
-      versions = "#{versions.first}+"
+      versions = "#{versions.first.split("-").first}"
     end
     browsers << "#{name} #{versions}"
   end
