@@ -77,7 +77,7 @@ def find_feature(params)
   features = caniuse_data["data"]
   matched_feature = features.find{ |key, hash| key == params[:text] || hash["title"].downcase == params[:text] }
   if !matched_feature.nil?
-    send_incoming_webhook(matched_feature, features[matched_feature.first], params[:channel_id])
+    send_incoming_webhook(matched_feature.first, features[matched_feature.first], params[:channel_id])
     response = ""
   else
     white = Text::WhiteSimilarity.new
