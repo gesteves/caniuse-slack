@@ -213,7 +213,7 @@ def build_browser_support_field(feature)
   end
   {
     :title => "Browsers with full support (including prefixed support)",
-    :value => supported.sort_by!{ |a,b| a.downcase <=> b.downcase }.join("\n")
+    :value => supported.sort_by!{ |browser| browser.downcase }.join("\n")
   }
 end
 
