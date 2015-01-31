@@ -2,6 +2,8 @@
 
 A standalone Slack integration that allows you to request and see [caniuse.com](http://caniuse.com) data in your Slack channels.
 
+![](http://i.imgur.com/EGu4JPe.png)
+
 ## Requirements
 
 You'll need a [Slack](https://slack.com) account, obviously, and a free [Heroku](https://www.heroku.com/) account to host the bot. You'll also need to be able to set up new integrations in Slack; if you're not able to do this, contact someone with admin access in your organization.
