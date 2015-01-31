@@ -84,6 +84,10 @@ def find_feature(params)
     matched_features = features.select{ |key, hash| white.similarity(params[:text], key) > 0.5 || white.similarity(params[:text], hash["title"].downcase) > 0.5 }
     if matched_features.size == 0
       response = "Sorry, I couldn't find caniuse data for `#{params[:text]}`."
+    elsif matched_features.size == 1
+      matched_feature = matched_features.first
+      send_incoming_webhook(matched_feature.first, features[matched_feature.first], params[:channel_id])
+      response = ""
     else
       response = "Sorry, I couldn't find caniuse data for `#{params[:text]}`. Did you mean one of these? #{matched_features.collect{ |f| "`#{f.first}`" }.join(", ")}"
     end
