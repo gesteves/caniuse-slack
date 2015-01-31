@@ -158,10 +158,9 @@ end
 # Builds the field the browser support percentage for the feature.
 # 
 def build_support_field(feature)
-  support = feature["usage_perc_y"].to_f + feature["usage_perc_a"].to_f
   {
-    :title => "Global support (full + partial)",
-    :value => "#{feature["usage_perc_y"]}% + #{feature["usage_perc_a"]}% = #{sprintf("%.2f", support)}%"
+    :title => "Global support",
+    :value => "#{feature["usage_perc_y"]}%"
   }
 end
 
