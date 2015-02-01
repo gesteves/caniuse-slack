@@ -15,7 +15,7 @@ You'll need a [Slack](https://slack.com) account, obviously, and a free [Heroku]
 2. Set up a Slack incoming webhook at https://slack.com/services/new/incoming-webhook. Copy the URL for the incoming webhook, you'll also need it later.
 
 3. Click this button to set up your Heroku app: [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)   
-If you'd rather do it manually, then just clone this repo, set up a Heroku app with Redis Cloud (the free level is more than enough for this), and deploy thie app there. Make sure to set up the config variables in
+If you'd rather do it manually, then just clone this repo, set up a Heroku app with Redis Cloud (the free level is more than enough for this), and deploy the app there. Make sure to set up the config variables in
 [.env.example](https://github.com/gesteves/caniuse-slack/blob/master/.env.example) in your Heroku app's settings screen.
 
 5. Point the outgoing webhook to https://[YOUR-HEROKU-APP].herokuapp.com
