@@ -39,11 +39,9 @@ post "/" do
     puts "[LOG] #{params}"
     if params[:token] != ENV["OUTGOING_WEBHOOK_TOKEN"]
       response = "Invalid token"
-    elsif params[:trigger_word].downcase == ENV["TRIGGER_WORD"].downcase
+    else
       params[:text] = params[:text].sub(params[:trigger_word], "").strip.downcase
       response = find_feature(params)
-    else
-      response = ""
     end
   rescue => e
     puts "[ERROR] #{e}"
