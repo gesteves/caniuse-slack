@@ -210,8 +210,8 @@ def build_browser_support_field(feature)
     end
   end
   {
-    :title => "Browsers with full support (including prefixed support)",
-    :value => supported.sort_by!{ |browser| browser.downcase }.join(", ")
+    :title => "Browsers with full support (prefixed & unprefixed)",
+    :value => supported.sort_by!{ |browser| browser.downcase }.join("\n")
   }
 end
 
