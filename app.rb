@@ -74,7 +74,7 @@ def find_feature(params)
   caniuse_data = get_caniuse_data
   features = caniuse_data["data"]
   if params[:text] == ""
-    response = "Available features: #{features.keys.collect{ |f| "`#{f}`" }.join(", ")}"
+    response = "Available features: #{features.keys.sort.collect{ |f| "`#{f}`" }.join(", ")}"
   else
     matched_feature = features.find{ |key, hash| key == params[:text] || hash["title"].downcase == params[:text] }
     if !matched_feature.nil?
@@ -84,13 +84,13 @@ def find_feature(params)
       white = Text::WhiteSimilarity.new
       matched_features = features.select{ |key, hash| white.similarity(params[:text], key) > 0.5 || white.similarity(params[:text], hash["title"].downcase) > 0.5 }
       if matched_features.size == 0
-        response = "Sorry, I couldn't find caniuse data for `#{params[:text]}`."
+        response = "Sorry, I couldn't find data for `#{params[:text]}`."
       elsif matched_features.size == 1
         matched_feature = matched_features.first
         send_incoming_webhook(matched_feature.first, features[matched_feature.first], params[:channel_id])
         response = ""
       else
-        response = "Sorry, I couldn't find caniuse data for `#{params[:text]}`. Did you mean one of these? #{matched_features.collect{ |f| "`#{f.first}`" }.join(", ")}"
+        response = "Sorry, I couldn't find data for `#{params[:text]}`. Did you mean one of these? #{matched_features.collect{ |f| "`#{f.first}`" }.join(", ")}"
       end
     end
   end
