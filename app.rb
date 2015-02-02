@@ -36,7 +36,6 @@ end
 # 
 post "/" do
   begin
-    start = Time.now
     if params[:token] != ENV["OUTGOING_WEBHOOK_TOKEN"]
       response = "Invalid token"
     else
@@ -47,7 +46,7 @@ post "/" do
     puts "[ERROR] #{e}"
     response = ""
   end
-  puts "[LOG] #{params["text"]} - Finished in #{Time.now - start} seconds"
+  puts "[LOG] #{params}"
   status 200
   if response != ""
     body json_response_for_slack(response)
