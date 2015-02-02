@@ -111,6 +111,30 @@ def get_caniuse_data
   JSON.parse(caniuse_data)
 end
 
+# Given the spec status code, gets the full name from the caniuse JSON.
+# 
+def get_status_name(code)
+  status_name = $redis.get("caniuse:statuses:#{code}")
+  if status_name.nil?
+    caniuse_data = get_caniuse_data
+    status_name = caniuse_data["statuses"][code]
+    $redis.setex("caniuse:statuses:#{code}", 60*60*24, status_name)
+  end
+  status_name
+end
+
+# Given the browser key, gets the full browser name from the caniuse JSON
+# 
+def get_browser_name(code)
+  browser_name = $redis.get("caniuse:agents:#{code}:browser")
+  if browser_name.nil?
+    caniuse_data = get_caniuse_data
+    browser_name = caniuse_data["agents"][code]["browser"]
+    $redis.setex("caniuse:agents:#{code}:browser", 60*60*24, browser_name)
+  end
+  browser_name
+end
+
 # Put together a JSON payload to send back to Slack, with
 # the caniuse info as an attachment.
 # See https://api.slack.com/docs/attachments for more info.
@@ -179,13 +203,6 @@ def build_spec_field(feature)
   end
 end
 
-# Given the spec status code, gets the full name from the caniuse JSON.
-# 
-def get_status_name(code)
-  caniuse_data = get_caniuse_data
-  caniuse_data["statuses"][code]
-end
-
 # Builds a list of links and resources for the requested feature.
 # 
 def build_resources_field(feature)
@@ -217,11 +234,4 @@ def build_browser_support_field(feature)
     :title => "Browsers with full support (prefixed & unprefixed)",
     :value => supported.sort_by!{ |browser| browser.downcase }.join("\n")
   }
-end
-
-# Given the browser key, gets the full browser name from the caniuse JSON
-# 
-def get_browser_name(code)
-  caniuse_data = get_caniuse_data
-  caniuse_data["agents"][code]["browser"]
 end
