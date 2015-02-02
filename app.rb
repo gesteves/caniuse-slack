@@ -36,17 +36,18 @@ end
 # 
 post "/" do
   begin
-    puts "[LOG] #{params}"
+    start = Time.now
     if params[:token] != ENV["OUTGOING_WEBHOOK_TOKEN"]
       response = "Invalid token"
     else
       params[:text] = params[:text].sub(params[:trigger_word], "").strip.downcase
-      response = find_feature(params)
+      response = process_request(params)
     end
   rescue => e
     puts "[ERROR] #{e}"
     response = ""
   end
+  puts "[LOG] #{params} - Finished in #{Time.now - start} seconds"
   status 200
   if response != ""
     body json_response_for_slack(response)
@@ -64,37 +65,46 @@ def json_response_for_slack(reply)
   response.to_json
 end
 
-# Get the caniuse data json, then do some fuzzy matching to find the requested feature.
-# If the feature key or title is matched exactly, send an empty response back to the outgoing webhook
-# and use the incoming webhook to send a properly formatted attachment.
-# If the received keyword doesn't match exactly, use the white similarity algorithm to find some
-# candidates to suggest back to the user.
-# 
-def find_feature(params)
-  caniuse_data = get_caniuse_data
-  features = caniuse_data["data"]
+# Processes the user's request, either listing all features,
+# or finding the requested feature and sending the outgoing webhook
+def process_request(params)
   if params[:text] == ""
-    response = "Available features: #{features.keys.sort.collect{ |f| "`#{f}`" }.join(", ")}"
+    response = get_all_features
   else
-    matched_feature = features.find{ |key, hash| key == params[:text] || hash["title"].downcase == params[:text] }
-    if !matched_feature.nil?
-      send_incoming_webhook(matched_feature.first, features[matched_feature.first], params[:channel_id])
-      response = ""
-    else
-      white = Text::WhiteSimilarity.new
-      matched_features = features.select{ |key, hash| white.similarity(params[:text], key) > 0.5 || white.similarity(params[:text], hash["title"].downcase) > 0.5 }
-      if matched_features.size == 0
-        response = "Sorry, I couldn't find data for `#{params[:text]}`."
-      elsif matched_features.size == 1
-        matched_feature = matched_features.first
-        send_incoming_webhook(matched_feature.first, features[matched_feature.first], params[:channel_id])
-        response = ""
-      else
-        response = "Sorry, I couldn't find data for `#{params[:text]}`. Did you mean one of these? #{matched_features.collect{ |f| "`#{f.first}`" }.join(", ")}"
-      end
-    end
+    response, feature = get_feature(params[:text])
+    send_incoming_webhook(params[:text], feature, params[:channel_id]) unless feature.nil?
   end
   response
+end
+
+# Gets the requested feature from redis.
+# If not found, gets the full caniuse json file and tries to find and exact match.
+# If no exact match found, does a "fuzzy" search using white algorithm.
+# If no results found, says so.
+# If one result found, returns it.
+# If more than one result found, ask user to be more specific.
+# 
+def get_feature(key)
+  caniuse_data = get_caniuse_data
+  features = caniuse_data["data"]
+  matched_feature = features.find{ |k, h| k == key || h["title"].downcase == key }
+  if !matched_feature.nil?
+    feature = features[matched_feature.first]
+    response = ""
+  else
+    white = Text::WhiteSimilarity.new
+    matched_features = features.select{ |k, h| white.similarity(key, k) > 0.5 || white.similarity(key, h["title"].downcase) > 0.5 }
+    if matched_features.size == 0
+      response = "Sorry, I couldn't find data for `#{key}`."
+    elsif matched_features.size == 1
+      matched_feature = matched_features.first
+      feature = features[matched_feature.first]
+      response = ""
+    else
+      response = "Sorry, I couldn't find data for `#{key}`. Did you mean one of these? #{matched_features.collect{ |f| "`#{f.first}`" }.join(", ")}"
+    end
+  end
+  return response, feature
 end
 
 # Get raw caniuse data from redis.
@@ -109,6 +119,18 @@ def get_caniuse_data
     $redis.setex("caniuse", 60*60*24, caniuse_data)
   end
   JSON.parse(caniuse_data)
+end
+
+# Get a list of all available features
+# 
+def get_all_features
+  features = $redis.get("caniuse:data:all")
+  if features.nil?
+    caniuse_data = get_caniuse_data
+    features = "Available features: #{caniuse_data["data"].keys.sort.collect{ |f| "`#{f}`" }.join(", ")}"
+    $redis.setex("caniuse:data:all", 60*60*24, features)
+  end
+  features
 end
 
 # Given the spec status code, gets the full name from the caniuse JSON.
@@ -140,13 +162,19 @@ end
 # See https://api.slack.com/docs/attachments for more info.
 # 
 def send_incoming_webhook(key, feature, channel_id)
-  payload = {
-    :text => "",
-    :channel => channel_id
-  }
-  attachments = []
-  attachments << build_attachment(key, feature)
-  payload[:attachments] = attachments 
+  payload = $redis.get("payload:#{key}")
+  if payload.nil?
+    payload = {
+      :text => ""
+    }
+    attachments = []
+    attachments << build_attachment(key, feature)
+    payload[:attachments] = attachments
+    $redis.setex("payload:#{key}", 60*60*24, payload.to_json)
+  else
+    payload = JSON.parse(payload)
+  end
+  payload[:channel] = channel_id
   HTTParty.post(ENV["INCOMING_WEBHOOK_URL"], :body => payload.to_json)
 end
 
