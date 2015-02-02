@@ -47,7 +47,7 @@ post "/" do
     puts "[ERROR] #{e}"
     response = ""
   end
-  puts "[LOG] #{params} - Finished in #{Time.now - start} seconds"
+  puts "[LOG] #{params["text"]} - Finished in #{Time.now - start} seconds"
   status 200
   if response != ""
     body json_response_for_slack(response)
