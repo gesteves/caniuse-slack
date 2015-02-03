@@ -84,24 +84,32 @@ end
 # If more than one result found, ask user to be more specific.
 # 
 def get_feature(key)
-  caniuse_data = get_caniuse_data
-  features = caniuse_data["data"]
-  matched_feature = features.find{ |k, h| k == key || h["title"].downcase == key }
-  if !matched_feature.nil?
-    feature = features[matched_feature.first]
-    response = ""
-  else
-    white = Text::WhiteSimilarity.new
-    matched_features = features.select{ |k, h| white.similarity(key, k) > 0.5 || white.similarity(key, h["title"].downcase) > 0.5 }
-    if matched_features.size == 0
-      response = "Sorry, I couldn't find data for `#{key}`."
-    elsif matched_features.size == 1
-      matched_feature = matched_features.first
+  feature = $redis.get("caniuse:data:#{key}")
+  if feature.nil?
+    caniuse_data = get_caniuse_data
+    features = caniuse_data["data"]
+    matched_feature = features.find{ |k, h| k == key || h["title"].downcase == key }
+    if !matched_feature.nil?
       feature = features[matched_feature.first]
       response = ""
+      $redis.setex("caniuse:data:#{matched_feature.first}", 60*60*24, feature.to_json)
     else
-      response = "Sorry, I couldn't find data for `#{key}`. Did you mean one of these? #{matched_features.collect{ |f| "`#{f.first}`" }.join(", ")}"
+      white = Text::WhiteSimilarity.new
+      matched_features = features.select{ |k, h| white.similarity(key, k) > 0.5 || white.similarity(key, h["title"].downcase) > 0.5 }
+      if matched_features.size == 0
+        response = "Sorry, I couldn't find data for `#{key}`."
+      elsif matched_features.size == 1
+        matched_feature = matched_features.first
+        feature = features[matched_feature.first]
+        response = ""
+        $redis.setex("caniuse:data:#{matched_feature.first}", 60*60*24, feature.to_json)
+      else
+        response = "Sorry, I couldn't find data for `#{key}`. Did you mean one of these? #{matched_features.collect{ |f| "`#{f.first}`" }.join(", ")}"
+      end
     end
+  else
+    response = ""
+    feature = JSON.parse(feature)
   end
   return response, feature
 end
