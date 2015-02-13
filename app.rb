@@ -55,12 +55,6 @@ post "/" do
   end
 end
 
-get "/cacheall" do
-  cache_caniuse_data
-  status 200
-  body "ok"
-end
-
 # Puts together the json payload that needs to be sent back to Slack
 # 
 def json_response_for_slack(reply)
@@ -134,7 +128,7 @@ def get_caniuse_data
   JSON.parse(caniuse_data)
 end
 
-def cache_caniuse_data
+def import_caniuse_data
   caniuse_data = get_caniuse_data
   features = caniuse_data["data"]
   features.each do |f|
