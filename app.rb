@@ -55,6 +55,12 @@ post "/" do
   end
 end
 
+get "/cacheall" do
+  cache_caniuse_data
+  status 200
+  body "ok"
+end
+
 # Puts together the json payload that needs to be sent back to Slack
 # 
 def json_response_for_slack(reply)
@@ -126,6 +132,16 @@ def get_caniuse_data
     $redis.setex("caniuse", 60*60*24, caniuse_data)
   end
   JSON.parse(caniuse_data)
+end
+
+def cache_caniuse_data
+  caniuse_data = get_caniuse_data
+  features = caniuse_data["data"]
+  features.each do |f|
+    key = f.first
+    feature = f.last
+    $redis.setex("caniuse:data:#{key}", 60*60*24, feature.to_json)
+  end
 end
 
 # Get a list of all available features
