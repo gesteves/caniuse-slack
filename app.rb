@@ -97,7 +97,7 @@ def get_feature(key)
       white = Text::WhiteSimilarity.new
       matched_features = features.select{ |k, h| white.similarity(key, k) > 0.5 || white.similarity(key, h["title"].downcase) > 0.5 }
       if matched_features.size == 0
-        response = "Sorry, I couldn't find data for `#{key}`."
+        response = "Sorry, I couldn't find data for `#{key}`. Say `#{ENV["TRIGGER_WORD"]}` to see all available features."
       elsif matched_features.size == 1
         matched_feature = matched_features.first
         feature = features[matched_feature.first]

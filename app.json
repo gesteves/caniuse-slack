@@ -20,6 +20,11 @@
     "INCOMING_WEBHOOK_URL": {
       "description": "The URL of the Slack incoming webhook you'll use for this. Set it up at https://slack.com/services/new/incoming-webhook.",
       "required": true
+    },
+    "TRIGGER_WORD": {
+      "description": "The Slack trigger word you'll use to invoke the bot.",
+      "required": true,
+      "value": "caniuse"
     }
   }
 }
