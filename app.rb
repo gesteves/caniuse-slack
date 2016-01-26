@@ -201,7 +201,7 @@ def build_attachment(key, feature)
   attachment = {}
   attachment[:color] = get_attachment_color(feature)
   attachment[:title] = feature["title"]
-  attachment[:title_link] = "http://caniuse.com/#feat=#{key}"
+  attachment[:title_link] = "http://caniuse.com/#search=#{key}"
   attachment[:text] = feature["description"]
   attachment[:fallback] = "#{feature["title"]} (http://caniuse.com/#feat=#{key}): #{feature["description"]}"
   attachment[:mrkdwn_in] = ["text", "title", "fields", "fallback"]
